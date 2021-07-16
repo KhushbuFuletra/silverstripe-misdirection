@@ -1,22 +1,22 @@
-# [misdirection](https://packagist.org/packages/nglasl/silverstripe-misdirection)
+# [misdirection](https://packagist.org/packages/symbiote/silverstripe-misdirection)
 
-_The current release is **3.1.1**_
+_The current release is **3.1.2**_
 
 > This module allows both simple and regular expression link redirections based on customisable mappings, either hooking into a page not found or replacing the default automated URL handling.
 
 ## Requirement
 
-* SilverStripe 3.1 → **4.0**
+- SilverStripe **4.0**
 
 This module does **not** require the CMS.
 
-## Getting Started
+## How to install?
 
-* [Place the module under your root project directory.](https://packagist.org/packages/nglasl/silverstripe-misdirection)
-* `/dev/build`
-* Select `Misdirection` through the CMS.
-* Create a link mapping.
-* `/mapping`
+- `composer require symbiote/silverstripe-misdirection`
+- Run `/dev/build`
+- Select `Misdirection` through the CMS.
+- Create a link mapping.
+- `/mapping`
 
 ## Overview
 
@@ -24,25 +24,25 @@ This module does **not** require the CMS.
 
 These allow both simple and regular expression link redirections, and can be used for legacy page redirection, vanity URLs (more below), or redirection based on specific URL patterns.
 
-![link-mapping](https://raw.githubusercontent.com/nglasl/silverstripe-misdirection/master/client/images/misdirection-link-mapping.png)
+![link-mapping](https://raw.githubusercontent.com/symbiote/silverstripe-misdirection/master/client/images/misdirection-link-mapping.png)
 
 The link mapping with the highest priority (followed by greatest specificity) will be used, and replaces the default automated URL handling out of the box. This default behaviour may be configured to only hook into a page not found:
 
 ```yaml
-nglasl\misdirection\MisdirectionRequestFilter:
+symbiote\misdirection\MisdirectionRequestFilter:
   enforce_misdirection: false
 ```
 
 When there are multiple matches, the link mapping first created will be used. This default behaviour may be configured to prioritise the link mapping most recently created:
 
 ```yaml
-nglasl\misdirection\LinkMapping:
-  priority: 'DESC'
+symbiote\misdirection\LinkMapping:
+  priority: "DESC"
 ```
 
 ### Vanity URLs and Fallbacks
 
-![vanity-URLs-and-fallbacks](https://raw.githubusercontent.com/nglasl/silverstripe-misdirection/master/client/images/misdirection-vanity-URLs-and-fallbacks.png)
+![vanity-URLs-and-fallbacks](https://raw.githubusercontent.com/symbiote/silverstripe-misdirection/master/client/images/misdirection-vanity-URLs-and-fallbacks.png)
 
 #### Vanity URLs
 
@@ -52,8 +52,8 @@ While it is possible to create these manually (as above), a content author may d
 
 When a user happens to encounter a page not found, a specified rule may be triggered to prevent displaying this. It is possible for an administrator to configure a global fallback through the site configuration, however a specific page setting will take precedence.
 
-* Select `Settings`
-* Select `Pages`
+- Select `Settings`
+- Select `Pages`
 
 ### What's Happening?
 
@@ -61,16 +61,16 @@ The link mappings are processed server side to prevent inefficient and problemat
 
 When you want to see exactly what is happening behind the scenes for a given URL, the model admin provides a powerful testing interface!
 
-![testing](https://raw.githubusercontent.com/nglasl/silverstripe-misdirection/master/client/images/misdirection-testing.png)
+![testing](https://raw.githubusercontent.com/symbiote/silverstripe-misdirection/master/client/images/misdirection-testing.png)
 
 Once a maximum number of requests has been reached, the server will respond with a page not found. The following is the default configuration:
 
 ```yaml
-nglasl\misdirection\MisdirectionRequestFilter:
+symbiote\misdirection\MisdirectionRequestFilter:
   maximum_requests: 9
 ```
 
-![testing-maximum-requests](https://raw.githubusercontent.com/nglasl/silverstripe-misdirection/master/client/images/misdirection-testing-maximum-requests.png)
+![testing-maximum-requests](https://raw.githubusercontent.com/symbiote/silverstripe-misdirection/master/client/images/misdirection-testing-maximum-requests.png)
 
 #### Bypassing Misdirection
 
@@ -81,7 +81,7 @@ It is possible to bypass the request filter completely by appending `?misdirecte
 This may be completely replaced, in which case legacy URLs will no longer resolve based on page version history.
 
 ```yaml
-nglasl\misdirection\MisdirectionRequestFilter:
+symbiote\misdirection\MisdirectionRequestFilter:
   replace_default: true
 ```
 
@@ -89,4 +89,4 @@ When a page is moved, the appropriate link mappings are automatically created an
 
 ## Maintainer Contact
 
-	Nathan Glasl, nathan@symbiote.com.au
+    Symbiote, support@symbiote.com.au

@@ -35,7 +35,7 @@
 		// Test the link mapping chain.
 
 		var URL = input ? input.val() : $('div.misdirection-testing.admin input.url').val();
-		$.getJSON('admin/misdirection/nglasl-misdirection-LinkMapping/getMappingChain', {
+		$.getJSON('admin/misdirection/symbiote-misdirection-LinkMapping/getMappingChain', {
 			map: URL
 		},
 		function(JSON) {

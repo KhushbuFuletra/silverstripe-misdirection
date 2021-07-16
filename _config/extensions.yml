@@ -1,13 +1,13 @@
 ---
 name: misdirection-extensions
 ---
-nglasl\misdirection\MisdirectionAdmin:
+symbiote\misdirection\MisdirectionAdmin:
   extensions:
-    - 'nglasl\misdirection\MisdirectionAdminTestingExtension'
+    - 'symbiote\misdirection\MisdirectionAdminTestingExtension'
 SilverStripe\CMS\Model\SiteTree:
   extensions:
-    - 'nglasl\misdirection\SiteTreeMisdirectionExtension'
-    - 'nglasl\misdirection\MisdirectionFallbackExtension'
+    - 'symbiote\misdirection\SiteTreeMisdirectionExtension'
+    - 'symbiote\misdirection\MisdirectionFallbackExtension'
 SilverStripe\SiteConfig\SiteConfig:
   extensions:
-    - 'nglasl\misdirection\MisdirectionFallbackExtension'
+    - 'symbiote\misdirection\MisdirectionFallbackExtension'
