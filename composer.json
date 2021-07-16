@@ -16,8 +16,7 @@
 	"homepage": "https://github.com/nglasl/silverstripe-misdirection",
 	"license": "BSD-3-Clause",
 	"authors": [{
-		"name": "Nathan Glasl",
-		"email": "nathan@symbiote.com.au"
+		"email": "support@symbiote.com.au"
 	}],
 	"require": {
 		"silverstripe/framework": "~4.0"

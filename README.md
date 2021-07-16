@@ -1,22 +1,22 @@
 # [misdirection](https://packagist.org/packages/nglasl/silverstripe-misdirection)
 
-_The current release is **3.1.1**_
+_The current release is **3.1.2**_
 
 > This module allows both simple and regular expression link redirections based on customisable mappings, either hooking into a page not found or replacing the default automated URL handling.
 
 ## Requirement
 
-* SilverStripe 3.1 → **4.0**
+- SilverStripe **4.0**
 
 This module does **not** require the CMS.
 
-## Getting Started
+## How to install?
 
-* [Place the module under your root project directory.](https://packagist.org/packages/nglasl/silverstripe-misdirection)
-* `/dev/build`
-* Select `Misdirection` through the CMS.
-* Create a link mapping.
-* `/mapping`
+- `composer require nglasl/silverstripe-misdirection`
+- Run `/dev/build`
+- Select `Misdirection` through the CMS.
+- Create a link mapping.
+- `/mapping`
 
 ## Overview
 
@@ -37,7 +37,7 @@ When there are multiple matches, the link mapping first created will be used. Th
 
 ```yaml
 nglasl\misdirection\LinkMapping:
-  priority: 'DESC'
+  priority: "DESC"
 ```
 
 ### Vanity URLs and Fallbacks
@@ -52,8 +52,8 @@ While it is possible to create these manually (as above), a content author may d
 
 When a user happens to encounter a page not found, a specified rule may be triggered to prevent displaying this. It is possible for an administrator to configure a global fallback through the site configuration, however a specific page setting will take precedence.
 
-* Select `Settings`
-* Select `Pages`
+- Select `Settings`
+- Select `Pages`
 
 ### What's Happening?
 
@@ -89,4 +89,4 @@ When a page is moved, the appropriate link mappings are automatically created an
 
 ## Maintainer Contact
 
-	Nathan Glasl, nathan@symbiote.com.au
+    Symbiote, support@symbiote.com.au
