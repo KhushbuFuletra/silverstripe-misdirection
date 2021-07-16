@@ -1,6 +1,6 @@
 <?php
 
-namespace nglasl\misdirection;
+namespace symbiote\misdirection;
 
 use SilverStripe\Admin\ModelAdmin;
 use SilverStripe\Control\HTTPRequest;
@@ -12,71 +12,70 @@ use SilverStripe\Security\Permission;
  *	@author Nathan Glasl <nathan@symbiote.com.au>
  */
 
-class MisdirectionAdmin extends ModelAdmin {
+class MisdirectionAdmin extends ModelAdmin
+{
+    private static $managed_models = LinkMapping::class;
 
-	private static $managed_models = LinkMapping::class;
+    private static $menu_title = 'Misdirection';
 
-	private static $menu_title = 'Misdirection';
+    private static $menu_description = 'Create, manage and test customisable <strong>link redirection</strong> mappings.';
 
-	private static $menu_description = 'Create, manage and test customisable <strong>link redirection</strong> mappings.';
+    private static $menu_icon_class = 'font-icon-switch';
 
-	private static $menu_icon_class = 'font-icon-switch';
+    private static $url_segment = 'misdirection';
 
-	private static $url_segment = 'misdirection';
+    private static $allowed_actions = array(
+        'getMappingChain'
+    );
 
-	private static $allowed_actions = array(
-		'getMappingChain'
-	);
+    /**
+     *	Update the custom summary fields to be sortable.
+     */
 
-	/**
-	 *	Update the custom summary fields to be sortable.
-	 */
+    public function getEditForm($ID = null, $fields = null)
+    {
+        $form = parent::getEditForm($ID, $fields);
+        $gridfield = $form->Fields()->fieldByName($this->sanitiseClassName($this->modelClass));
+        $gridfield->getConfig()->getComponentByType(GridFieldSortableHeader::class)->setFieldSorting(array(
+            'RedirectTypeSummary' => 'RedirectType'
+        ));
 
-	public function getEditForm($ID = null, $fields = null) {
+        // Allow extension customisation.
 
-		$form = parent::getEditForm($ID, $fields);
-		$gridfield = $form->Fields()->fieldByName($this->sanitiseClassName($this->modelClass));
-		$gridfield->getConfig()->getComponentByType(GridFieldSortableHeader::class)->setFieldSorting(array(
-			'RedirectTypeSummary' => 'RedirectType'
-		));
+        $this->extend('updateMisdirectionAdminEditForm', $form);
+        return $form;
+    }
 
-		// Allow extension customisation.
+    /**
+     *	Retrieve the JSON link mapping recursion stack for the testing interface.
+     *
+     *	@URLparameter map <{TEST_URL}> string
+     *	@return JSON
+     */
 
-		$this->extend('updateMisdirectionAdminEditForm', $form);
-		return $form;
-	}
+    public function getMappingChain()
+    {
 
-	/**
-	 *	Retrieve the JSON link mapping recursion stack for the testing interface.
-	 *
-	 *	@URLparameter map <{TEST_URL}> string
-	 *	@return JSON
-	 */
+        // Restrict this functionality to administrators.
 
-	public function getMappingChain() {
+        $user = Member::currentUserID();
+        if (Permission::checkMember($user, 'ADMIN')) {
 
-		// Restrict this functionality to administrators.
+            // Instantiate a request to handle the link mapping.
 
-		$user = Member::currentUserID();
-		if(Permission::checkMember($user, 'ADMIN')) {
+            $request = new HTTPRequest('GET', $this->getRequest()->getVar('map'));
 
-			// Instantiate a request to handle the link mapping.
+            // Retrieve the link mapping recursion stack JSON.
 
-			$request = new HTTPRequest('GET', $this->getRequest()->getVar('map'));
+            $testing = true;
+            $mappings = singleton(MisdirectionService::class)->getMappingByRequest($request, $testing);
+            $this->getResponse()->addHeader('Content-Type', 'application/json');
 
-			// Retrieve the link mapping recursion stack JSON.
+            // JSON_PRETTY_PRINT.
 
-			$testing = true;
-			$mappings = singleton(MisdirectionService::class)->getMappingByRequest($request, $testing);
-			$this->getResponse()->addHeader('Content-Type', 'application/json');
-
-			// JSON_PRETTY_PRINT.
-
-			return json_encode($mappings, 128);
-		}
-		else {
-			return $this->httpError(404);
-		}
-	}
-
+            return json_encode($mappings, 128);
+        } else {
+            return $this->httpError(404);
+        }
+    }
 }

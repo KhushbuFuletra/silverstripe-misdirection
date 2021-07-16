@@ -1,4 +1,4 @@
-# [misdirection](https://packagist.org/packages/nglasl/silverstripe-misdirection)
+# [misdirection](https://packagist.org/packages/symbiote/silverstripe-misdirection)
 
 _The current release is **3.1.2**_
 

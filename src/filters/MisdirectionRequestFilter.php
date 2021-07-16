@@ -1,6 +1,6 @@
 <?php
 
-namespace nglasl\misdirection;
+namespace symbiote\misdirection;
 
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Director;
@@ -16,155 +16,155 @@ use SilverStripe\ErrorPage\ErrorPage;
  *	@author Nathan Glasl <nathan@symbiote.com.au>
  */
 
-class MisdirectionRequestFilter implements RequestFilter {
+class MisdirectionRequestFilter implements RequestFilter
+{
+    public $service;
 
-	public $service;
+    private static $dependencies = array(
+        'service' => '%$' . MisdirectionService::class
+    );
 
-	private static $dependencies = array(
-		'service' => '%$' . MisdirectionService::class
-	);
+    /**
+     *	The status codes for redirection, since the core definitions are protected.
+     */
 
-	/**
-	 *	The status codes for redirection, since the core definitions are protected.
-	 */
+    private static $status_codes = array(
+        301 => 'Moved Permanently',
+        302 => 'Found',
+        303 => 'See Other',
+        304 => 'Not Modified',
+        305 => 'Use Proxy',
+        307 => 'Temporary Redirect',
+        308 => 'Permanent Redirect'
+    );
 
-	private static $status_codes = array(
-		301 => 'Moved Permanently',
-		302 => 'Found',
-		303 => 'See Other',
-		304 => 'Not Modified',
-		305 => 'Use Proxy',
-		307 => 'Temporary Redirect',
-		308 => 'Permanent Redirect'
-	);
+    /**
+     *	The configuration for the default automated URL handling.
+     */
 
-	/**
-	 *	The configuration for the default automated URL handling.
-	 */
+    private static $enforce_misdirection = true;
 
-	private static $enforce_misdirection = true;
+    private static $replace_default = false;
 
-	private static $replace_default = false;
+    /**
+     *	The maximum number of consecutive link mappings.
+     */
 
-	/**
-	 *	The maximum number of consecutive link mappings.
-	 */
+    private static $maximum_requests = 9;
 
-	private static $maximum_requests = 9;
+    public function preRequest(HTTPRequest $request)
+    {
+        return true;
+    }
 
-	public function preRequest(HTTPRequest $request) {
+    /**
+     *	Attempt to redirect towards the highest priority link mapping that may have been defined.
+     *
+     *	@URLparameter misdirected <{BYPASS_LINK_MAPPINGS}> boolean
+     */
 
-		return true;
-	}
+    public function postRequest(HTTPRequest $request, HTTPResponse $response)
+    {
 
-	/**
-	 *	Attempt to redirect towards the highest priority link mapping that may have been defined.
-	 *
-	 *	@URLparameter misdirected <{BYPASS_LINK_MAPPINGS}> boolean
-	 */
+        // Bypass the request filter when requesting specific director rules such as "/admin".
 
-	public function postRequest(HTTPRequest $request, HTTPResponse $response) {
+        $configuration = Config::inst();
+        $requestURL = $request->getURL();
+        $bypass = array(
+            'admin',
+            'Security',
+            'CMSSecurity',
+            'dev'
+        );
+        foreach ($configuration->get(Director::class, 'rules') as $segment => $controller) {
 
-		// Bypass the request filter when requesting specific director rules such as "/admin".
+            // Retrieve the specific director rules.
 
-		$configuration = Config::inst();
-		$requestURL = $request->getURL();
-		$bypass = array(
-			'admin',
-			'Security',
-			'CMSSecurity',
-			'dev'
-		);
-		foreach($configuration->get(Director::class, 'rules') as $segment => $controller) {
+            if (($position = strpos($segment, '$')) !== false) {
+                $segment = rtrim(substr($segment, 0, $position), '/');
+            }
 
-			// Retrieve the specific director rules.
+            // Determine if the current request matches a specific director rule.
 
-			if(($position = strpos($segment, '$')) !== false) {
-				$segment = rtrim(substr($segment, 0, $position), '/');
-			}
+            if ($segment && in_array($segment, $bypass) && (($requestURL === $segment) || (strpos($requestURL, "{$segment}/") === 0))) {
 
-			// Determine if the current request matches a specific director rule.
+                // Continue processing the response.
 
-			if($segment && in_array($segment, $bypass) && (($requestURL === $segment) || (strpos($requestURL, "{$segment}/") === 0))) {
+                return true;
+            }
+        }
 
-				// Continue processing the response.
+        // Bypass the request filter when using the misdirected GET parameter.
 
-				return true;
-			}
-		}
+        if ($request->getVar('misdirected') || $request->getVar('direct')) {
 
-		// Bypass the request filter when using the misdirected GET parameter.
+            // Continue processing the response.
 
-		if($request->getVar('misdirected') || $request->getVar('direct')) {
+            return true;
+        }
 
-			// Continue processing the response.
+        // Determine the default automated URL handling response status.
 
-			return true;
-		}
+        $status = $response->getStatusCode();
+        $success = (($status >= 200) && ($status < 300));
+        $error = ($status === 404);
 
-		// Determine the default automated URL handling response status.
+        // Determine whether we're either hooking into a page not found or replacing the default automated URL handling.
 
-		$status = $response->getStatusCode();
-		$success = (($status >= 200) && ($status < 300));
-		$error = ($status === 404);
+        $enforce = $configuration->get(MisdirectionRequestFilter::class, 'enforce_misdirection');
+        $replace = $configuration->get(MisdirectionRequestFilter::class, 'replace_default');
+        if (($error || $enforce || $replace) && ($map = $this->service->getMappingByRequest($request))) {
 
-		// Determine whether we're either hooking into a page not found or replacing the default automated URL handling.
+            // Update the response code where appropriate.
 
-		$enforce = $configuration->get(MisdirectionRequestFilter::class, 'enforce_misdirection');
-		$replace = $configuration->get(MisdirectionRequestFilter::class, 'replace_default');
-		if(($error || $enforce || $replace) && ($map = $this->service->getMappingByRequest($request))) {
+            $responseCode = $map->ResponseCode;
+            if ($responseCode == 0) {
+                $responseCode = 301;
+            }
 
-			// Update the response code where appropriate.
+            // Determine the home page URL when replacing the default automated URL handling.
 
-			$responseCode = $map->ResponseCode;
-			if($responseCode == 0) {
-				$responseCode = 301;
-			}
+            $link = $map->getLink();
+            $base = Director::baseURL();
+            if ($replace && (substr($link, 0, strlen($base)) === $base) && (substr($link, strlen($base)) === 'home/')) {
+                $link = $base;
+            }
 
-			// Determine the home page URL when replacing the default automated URL handling.
+            // Update the response using the link mapping redirection.
 
-			$link = $map->getLink();
-			$base = Director::baseURL();
-			if($replace && (substr($link, 0, strlen($base)) === $base) && (substr($link, strlen($base)) === 'home/')) {
-				$link = $base;
-			}
+            $response->setBody('');
+            $response->redirect($link, $responseCode);
+        }
 
-			// Update the response using the link mapping redirection.
+        // Determine a page not found fallback, when the CMS module is present.
 
-			$response->setBody('');
-			$response->redirect($link, $responseCode);
-		}
+        elseif ($error && ($fallback = $this->service->determineFallback($requestURL))) {
 
-		// Determine a page not found fallback, when the CMS module is present.
+            // Update the response code where appropriate.
 
-		else if($error && ($fallback = $this->service->determineFallback($requestURL))) {
+            $responseCode = $fallback['code'];
+            if ($responseCode === 0) {
+                $responseCode = 303;
+            }
 
-			// Update the response code where appropriate.
+            // Update the response using the fallback, enforcing no further redirection.
 
-			$responseCode = $fallback['code'];
-			if($responseCode === 0) {
-				$responseCode = 303;
-			}
+            $response->setBody('');
+            $response->redirect($fallback['link'], $responseCode);
+        }
 
-			// Update the response using the fallback, enforcing no further redirection.
+        // When enabled, replace the default automated URL handling with a page not found.
 
-			$response->setBody('');
-			$response->redirect($fallback['link'], $responseCode);
-		}
+        elseif (!$error && !$success && $replace) {
+            $response->setStatusCode(404);
 
-		// When enabled, replace the default automated URL handling with a page not found.
+            // Retrieve the appropriate page not found response.
 
-		else if(!$error && !$success && $replace) {
-			$response->setStatusCode(404);
+            (ClassInfo::exists(SiteTree::class) && ($page = ErrorPage::response_for(404))) ? $response->setBody($page->getBody()) : $response->setBody('No URL was matched!');
+        }
 
-			// Retrieve the appropriate page not found response.
+        // Continue processing the response.
 
-			(ClassInfo::exists(SiteTree::class) && ($page = ErrorPage::response_for(404))) ? $response->setBody($page->getBody()) : $response->setBody('No URL was matched!');
-		}
-
-		// Continue processing the response.
-
-		return true;
-	}
-
+        return true;
+    }
 }

@@ -5,4 +5,4 @@ SilverStripe\Core\Injector\Injector:
   SilverStripe\Control\RequestProcessor:
     properties:
       filters:
-        - '%$nglasl\misdirection\MisdirectionRequestFilter'
+        - '%$symbiote\misdirection\MisdirectionRequestFilter'

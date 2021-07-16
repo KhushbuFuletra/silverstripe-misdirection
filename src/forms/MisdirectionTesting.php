@@ -1,6 +1,6 @@
 <?php
 
-namespace nglasl\misdirection;
+namespace symbiote\misdirection;
 
 use SilverStripe\Forms\GridField\GridField_HTMLProvider;
 
@@ -9,16 +9,17 @@ use SilverStripe\Forms\GridField\GridField_HTMLProvider;
  *	@author Nathan Glasl <nathan@symbiote.com.au>
  */
 
-class MisdirectionTesting implements GridField_HTMLProvider {
+class MisdirectionTesting implements GridField_HTMLProvider
+{
 
-	/**
-	 *	Render the URL input and test button.
-	 */
+    /**
+     *	Render the URL input and test button.
+     */
 
-	public function getHTMLFragments($gridfield) {
-
-		return array(
-			'before' => "<div class='misdirection-testing admin'>
+    public function getHTMLFragments($gridfield)
+    {
+        return array(
+            'before' => "<div class='misdirection-testing admin'>
 				<div><strong>Test Link Mappings</strong></div>
 				<div class='wrapper'>
 					<input type='text' class='text w-50 url' spellcheck='false'/>
@@ -28,7 +29,6 @@ class MisdirectionTesting implements GridField_HTMLProvider {
 				</div>
 				<div class='results'></div>
 			</div>"
-		);
-	}
-
+        );
+    }
 }
